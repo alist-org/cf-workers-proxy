@@ -1,0 +1,4 @@
+name = "cf-workers-proxy"
+main = "src/index.ts"
+compatibility_date = "2022-09-09"
+node_compat = true
