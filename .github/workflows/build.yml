@@ -1,0 +1,62 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+    name: Build
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: main
+          path: cf-workers-proxy
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Checkout dist repo
+        uses: actions/checkout@v2
+        with:
+          repository: alist-org/alist-proxy
+          ref: main
+          path: alist-proxy
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Build
+        run: |
+          cd cf-workers-proxy
+          npm i
+          npm run build
+          cd ..
+
+      - name: Copy dist and commit
+        run: |
+          cd alist-proxy
+          rm -f alist-proxy.js
+          cp -r ../cf-workers-proxy/dist/index.js ./alist-proxy.js
+          git add .
+          git config --local user.email "i@nn.ci"
+          git config --local user.name "Noah Hsu"
+          git commit --allow-empty -m "auto update alist-proxy.js" -a
+          cd ..
+      - name: Upload dist files
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.MY_TOKEN }}
+          branch: main
+          directory: alist-proxy
+          repository: alist-org/alist-proxy
