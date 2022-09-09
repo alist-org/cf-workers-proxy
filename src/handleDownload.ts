@@ -1,7 +1,5 @@
+import { ADDRESS, TOKEN } from "./const";
 import { verify } from "./verify";
-
-export const ADDRESS = "YOUR_ADDRESS";
-export const TOKEN = "YOUR_TOKEN";
 
 export async function handleDownload(request: Request) {
   const origin = request.headers.get("origin") ?? "*";
@@ -9,12 +7,12 @@ export async function handleDownload(request: Request) {
   const path = decodeURI(url.pathname);
   const sign = url.searchParams.get("sign") ?? "";
   const name = path.split("/").pop() ?? "";
-  const verifyResult = verify(name, sign);
+  const verifyResult = await verify(name, sign);
   if (verifyResult !== "") {
     const resp = new Response(
       JSON.stringify({
         code: 401,
-        message: `sign mismatch`,
+        message: verifyResult,
       }),
       {
         headers: {

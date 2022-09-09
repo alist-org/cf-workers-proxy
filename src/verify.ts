@@ -1,9 +1,7 @@
-import hmacSHA512 from "crypto-js/hmac-sha512";
-import Base64 from "crypto-js/enc-base64url";
-import { TOKEN } from "./handleDownload";
+import { TOKEN } from "./const";
 
-export const verify = (data: string, sign: string): string => {
-  const signSlice = sign.split(":");
+export const verify = async (data: string, _sign: string): Promise<string> => {
+  const signSlice = _sign.split(":");
   if (!signSlice[signSlice.length - 1]) {
     return "expire missing";
   }
@@ -11,12 +9,41 @@ export const verify = (data: string, sign: string): string => {
   if (isNaN(expire)) {
     return "expire invalid";
   }
-  if (expire < Date.now()) {
+  if (expire < Date.now() && expire > 0) {
     return "expire expired";
   }
-  const right = Base64.stringify(hmacSHA512(`${data}:${expire}`, TOKEN));
-  if (sign !== right) {
+  const right = await hmacSha256Sign(data, expire);
+  if (_sign !== right) {
     return "sign mismatch";
   }
   return "";
+};
+
+export const hmacSha256Sign = async (
+  data: string,
+  expire: number
+): Promise<string> => {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(TOKEN),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign", "verify"]
+  );
+  const buf = await crypto.subtle.sign(
+    {
+      name: "HMAC",
+      hash: "SHA-256",
+    },
+    key,
+    new TextEncoder().encode(`${data}:${expire}`)
+  );
+  // to base64url
+  return (
+    btoa(String.fromCharCode(...new Uint8Array(buf)))
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_") +
+    ":" +
+    expire
+  );
 };
