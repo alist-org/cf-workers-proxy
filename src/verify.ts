@@ -9,7 +9,7 @@ export const verify = async (data: string, _sign: string): Promise<string> => {
   if (isNaN(expire)) {
     return "expire invalid";
   }
-  if (expire < Date.now() && expire > 0) {
+  if (expire < Date.now() / 1000 && expire > 0) {
     return "expire expired";
   }
   const right = await hmacSha256Sign(data, expire);
