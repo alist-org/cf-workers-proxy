@@ -4,7 +4,7 @@ import { verify } from "./verify";
 export async function handleDownload(request: Request) {
   const origin = request.headers.get("origin") ?? "*";
   const url = new URL(request.url);
-  const path = decodeURI(url.pathname);
+  const path = decodeURIComponent(url.pathname);
   const sign = url.searchParams.get("sign") ?? "";
   const name = path.split("/").pop() ?? "";
   const verifyResult = await verify(name, sign);
