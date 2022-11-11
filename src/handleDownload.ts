@@ -6,8 +6,7 @@ export async function handleDownload(request: Request) {
   const url = new URL(request.url);
   const path = decodeURIComponent(url.pathname);
   const sign = url.searchParams.get("sign") ?? "";
-  const name = path.split("/").pop() ?? "";
-  const verifyResult = await verify(name, sign);
+  const verifyResult = await verify(path, sign);
   if (verifyResult !== "") {
     const resp = new Response(
       JSON.stringify({
