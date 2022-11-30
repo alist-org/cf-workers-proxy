@@ -48,6 +48,7 @@ export async function handleDownload(request: Request) {
   let response = await fetch(request);
   // Recreate the response so we can modify the headers
   response = new Response(response.body, response);
+  response.headers.delete("set-cookie")
   // Set CORS headers
   response.headers.set("Access-Control-Allow-Origin", origin);
   // Append to/Add Vary header so browser will cache response correctly
