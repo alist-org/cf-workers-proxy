@@ -50,7 +50,7 @@ jobs:
           cp -r ../cf-workers-proxy/dist/index.js ./alist-proxy.js
           git add .
           git config --local user.email "i@nn.ci"
-          git config --local user.name "Noah Hsu"
+          git config --local user.name "Andy Hsu"
           git commit --allow-empty -m "auto update alist-proxy.js" -a
           cd ..
       - name: Upload dist files
