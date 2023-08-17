@@ -37,7 +37,8 @@ export async function handleDownload(request: Request) {
   if (res.code !== 200) {
     return new Response(JSON.stringify(res));
   }
-  request = new Request(res.data.url, { ...request, redirect: "follow" });
+  request = new Request(res.data.url, request);
+  request = new Request(request, { redirect: "follow" });
   if (res.data.header) {
     for (const k in res.data.header) {
       for (const v of res.data.header[k]) {
@@ -48,7 +49,7 @@ export async function handleDownload(request: Request) {
   let response = await fetch(request);
   // Recreate the response so we can modify the headers
   response = new Response(response.body, response);
-  response.headers.delete("set-cookie")
+  response.headers.delete("set-cookie");
   // Set CORS headers
   response.headers.set("Access-Control-Allow-Origin", origin);
   // Append to/Add Vary header so browser will cache response correctly
