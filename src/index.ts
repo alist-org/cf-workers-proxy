@@ -1,5 +1,4 @@
-import { handleDownload } from "./handleDownload";
-import { handleOptions } from "./handleOptions";
+import { handleRequest } from "./handleRequest";
 
 export interface Env {
   // Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
@@ -18,9 +17,6 @@ export default {
     env: Env,
     ctx: ExecutionContext
   ): Promise<Response> {
-    if (request.method === "OPTIONS") {
-      return handleOptions(request);
-    }
-    return handleDownload(request);
+    return await handleRequest(request);
   },
 };

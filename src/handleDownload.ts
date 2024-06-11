@@ -1,5 +1,6 @@
-import { ADDRESS, TOKEN } from "./const";
+import { ADDRESS, TOKEN, WORKER_ADDRESS } from "./const";
 import { verify } from "./verify";
+import { handleRequest } from "./handleRequest";
 
 export async function handleDownload(request: Request) {
   const origin = request.headers.get("origin") ?? "*";
@@ -38,7 +39,6 @@ export async function handleDownload(request: Request) {
     return new Response(JSON.stringify(res));
   }
   request = new Request(res.data.url, request);
-  request = new Request(request, { redirect: "follow" });
   if (res.data.header) {
     for (const k in res.data.header) {
       for (const v of res.data.header[k]) {
@@ -47,6 +47,20 @@ export async function handleDownload(request: Request) {
     }
   }
   let response = await fetch(request);
+  while (response.status >= 300 && response.status < 400) {
+    const location = response.headers.get("Location");
+    if (location) {
+      if (location.startsWith(`${WORKER_ADDRESS}/`)) {
+        request = new Request(location, request);
+        return await handleRequest(request);
+      } else {
+        request = new Request(location, request);
+        response = await fetch(request);
+      }
+    } else {
+      break;
+    }
+  }
   // Recreate the response so we can modify the headers
   response = new Response(response.body, response);
   response.headers.delete("set-cookie");
